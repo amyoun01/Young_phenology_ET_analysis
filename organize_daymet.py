@@ -60,5 +60,7 @@ for v in climvars:
         rst_i = gdal.Open(fn_i,gdal.GA_ReadOnly)
         
         rst_arr_i = rst_i.ReadAsArray()
+
+        # This is a new line
         
             
