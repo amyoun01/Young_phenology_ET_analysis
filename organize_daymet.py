@@ -33,11 +33,32 @@ site_info = pd.read_csv('pheno_flux_sites_to_use.csv')
 site_info_geo = gpd.GeoDataFrame(site_info, 
                                  geometry=gpd.points_from_xy(site_info.lon, site_info.lat))
 
-# First, make gridded maps of aridity index (AI = PET/P). PET will be calculated using
-# Thornthwaite's equation (1948)
+# First, import NALCMS merged map for USA and Canada and then use this projection
+# info to trim and reproject the 
 
+os.chdir(wdir + "/data/raw_data/NALCMS/")
+nalcms = gdal.Open("nalcms_usa_can_merge.tif",gdal.GA_ReadOnly)
+projinfo = nalcms.GetProjection()
+geoTransform = nalcms.GetGeoTransform()
+
+# This will provide the x and y coordinate limits for the map
+minx = geoTransform[0]
+maxy = geoTransform[3]
+maxx = minx + geoTransform[1] * nalcms.RasterXSize
+miny = maxy + geoTransform[5] * nalcms.RasterYSize
+
+# Second, make gridded maps of aridity index (AI = PET/P). PET will be calculated using
+# Thornthwaite's equation (1948)
 for y in yrs:
         
+    os.chdir(wdir + climdata_dir + "/prcp")
+    
+    prcp_y = gdal.Open("daymet_v4_prcp_monttl_na_" + str(y) + ".tif",gdal.GA_ReadOnly)
+    prcp_arr_y = prcp_y.ReadAsArray()
+    prcp_arr_y[prcp_arr_y == -9999] = np.nan
+    
+    prcp_arr_annsum_y = np.sum(prcp_arr_y,axis=0)
+    
     os.chdir(wdir + climdata_dir + "/prcp")
         
         fn_i = "daymet_v4_" + climvars[v] + "_na_" + str(y) + ".tif"
