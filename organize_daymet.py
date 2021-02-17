@@ -46,7 +46,7 @@ nalcms = gdal.Open("nalcms_usa_can_merge.tif")#,gdal.GA_ReadOnly)
 
 count = 0
 
-for y in yrs[0]:
+for y in yrs:
         
     # PRCP ------------------------
     
@@ -127,7 +127,7 @@ for y in yrs[0]:
         for m in range(0,12):
             
             tanLat[m,:,:] = tanLat[m,:,:] * tanDelta_values[m]
-            d[m,:,:] + days_per_month[m]        
+            d[m,:,:,] = d[m,:,:] + days_per_month[m]        
         
         tanLat[tanLat < -1] = -1  
         tanLat[tanLat > 1] = 1
