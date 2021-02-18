@@ -46,7 +46,7 @@ nalcms = gdal.Open("nalcms_usa_can_merge.tif")#,gdal.GA_ReadOnly)
 
 count = 0
 
-for y in yrs[0]:
+for y in yrs:
         
     # PRCP ------------------------
     
@@ -56,8 +56,11 @@ for y in yrs[0]:
     prcp_arr_y = prcp_y.ReadAsArray()
     prcp_arr_y[prcp_arr_y == -9999] = np.nan
     
-    prcp_arr_annsum_y = np.sum(prcp_arr_y,axis=0)
+    P_sum = np.sum(prcp_arr_y,axis=0)
     
+    if count == 0:
+        
+        driver = prcp_y.GetDriver()    
     
     # TMAX ------------------------
     
@@ -127,7 +130,7 @@ for y in yrs[0]:
         for m in range(0,12):
             
             tanLat[m,:,:] = tanLat[m,:,:] * tanDelta_values[m]
-            d[m,:,:] + days_per_month[m]        
+            d[m,:,:] = d[m,:,:] + days_per_month[m]        
         
         tanLat[tanLat < -1] = -1  
         tanLat[tanLat > 1] = 1
@@ -139,7 +142,7 @@ for y in yrs[0]:
     # -------------------------------------------------------------------------
     # Calculate monthly PET
     # -------------------------------------------------------------------------
-    
+        
     T = tavg_arr_y; del tavg_arr_y
     T[T < 0] = 0
     i = (T/5.0)**1.514
@@ -148,8 +151,21 @@ for y in yrs[0]:
     
     alpha = 675 * 10**-9 * I**3 - 771 * 10**-7 * I**2 + 1792 * 10**-5 * I + 0.49239
     PET_nc = 16 * ((10*T)/np.tile(I,(12,1,1)))**np.tile(alpha,(12,1,1))
-    PET = (N/12) * (d/30) * PET_nc; del PET_nc
+    PET = (N/12.0) * (d/30.0) * PET_nc; del PET_nc
+
+    PET_sum = np.sum(PET,axis=0)
+
+    AI = PET_sum/P_sum
+    AI[np.isinf(AI)] = np.nan
+    AI[AI > 20] = 20
     
+    output_ds = driver.Create(wdir + "/data/raw_data/daymet/aridity_na_" + str(y) + ".tif",
+                              prcp_y.RasterXSize,prcp_y.RasterYSize,1,gdal.GDT_Float32)
+    output_ds.SetGeoTransform(prcp_y.GetGeoTransform())
+    output_ds.SetProjection(prcp_y.GetProjection())
+    output_ds.GetRasterBand(1).WriteArray(AI)
+    
+    output_ds = None
+        
     count = count + 1
-    
     
