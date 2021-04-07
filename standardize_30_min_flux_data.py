@@ -41,25 +41,36 @@ for i in range(0,len(sites)):
     fluxdat = pd.read_csv(AMF_file_names[i],skiprows=[0,1])
     fluxdat[fluxdat == -9999] = np.nan
     
+    datetime_start = pd.to_datetime(fluxdat.TIMESTAMP_START,format='%Y%m%d%H%M')
+    datetime_end   = pd.to_datetime(fluxdat.TIMESTAMP_END,format='%Y%m%d%H%M')
+
+    dt_id = (datetime_start > start_date[i]) & (datetime_end < end_date[i])
+    
+    fluxdat = fluxdat.loc[dt_id]
+    
     raw_data_var_names = fluxdat.columns
     
-    for k in 1:len(vars_of_interest):
+    fluxdat_subset = []
+    fluxdat_subset['datetime_start'] = np.nan datetime_start
+    
+    for k in range(0,len(vars_of_interest)):
         
         if vars_of_interest[k] == "precip":
             continue            
         
-        column_id = vars_of_interest == vars_of_interest[k]
+        column_id = k + 1
         
-        varname_to_import = var_names[:,2:-0]
-        varname_to_import = char(table2array(varname_to_import))
+        varname_to_import = var_names.iloc[i,column_id]
         
-        if strcmp(varname_to_import,'NA')
+        if varname_to_import == 'NA' :
             
-             fluxdat_filtered.(char(vars_of_interest(k))) = NaN(height(fluxdat),1);
+            fluxdat_subset[varname_to_import] = np.nan
             
-        else
+        else:
             
-             fluxdat_filtered.(char(vars_of_interest(k))) = fluxdat.(varname_to_import);
+            fluxdat_subset[varname_to_import] = fluxdat.(varname_to_import);
+ 
+            fluxdat_subset.(char(vars_of_interest(k))) = 
             
         end
         
