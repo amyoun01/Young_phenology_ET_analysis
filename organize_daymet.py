@@ -158,6 +158,7 @@ for y in yrs:
     AI = PET_sum/P_sum
     AI[np.isinf(AI)] = np.nan
     AI[AI > 20] = 20
+    AI[np.isnan(AI)] = -9999
     
     output_ds = driver.Create(wdir + "/data/raw_data/daymet/aridity_na_" + str(y) + ".tif",
                               prcp_y.RasterXSize,prcp_y.RasterYSize,1,gdal.GDT_Float32)
